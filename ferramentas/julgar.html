@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Julgamento de relevancia - PI III</title>
+<style>
+  :root{
+    --azul:#1F4E79; --azul2:#2E75B6; --claro:#EAF1FA;
+    --cinza:#4D4D4D; --acento:#C55A11; --borda:#d8dee6;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
+    color:var(--cinza); background:#f7f9fb; line-height:1.5;
+  }
+  header{
+    background:var(--azul); color:#fff; padding:10px 18px;
+    display:flex; align-items:center; gap:14px; flex-wrap:wrap;
+  }
+  header h1{font-size:15px; margin:0; font-weight:600; letter-spacing:.3px}
+  header .sp{flex:1}
+  header button{
+    background:rgba(255,255,255,.14); color:#fff; border:1px solid rgba(255,255,255,.3);
+    padding:4px 10px; border-radius:5px; cursor:pointer; font-size:12px;
+  }
+  header button:hover{background:rgba(255,255,255,.26)}
+  main{max-width:900px; margin:0 auto; padding:18px}
+  .cartao{background:#fff; border:1px solid var(--borda); border-radius:10px; padding:18px; margin-bottom:16px}
+  h2{font-size:16px; color:var(--azul); margin:0 0 10px}
+  label{display:block; font-size:13px; font-weight:600; margin:12px 0 4px}
+  input[type=text],input[type=number],textarea{
+    width:100%; padding:8px 10px; border:1px solid var(--borda); border-radius:6px;
+    font:inherit; font-size:14px; background:#fff;
+  }
+  textarea{min-height:90px; font-family:ui-monospace,Menlo,Consolas,monospace; font-size:12px}
+  input[type=file]{font-size:13px; margin-top:4px}
+  .dica{font-size:12px; color:#7a8794; margin-top:3px}
+  .primario{
+    background:var(--azul2); color:#fff; border:0; padding:11px 20px;
+    border-radius:7px; font-size:15px; font-weight:600; cursor:pointer;
+  }
+  .primario:hover{background:var(--azul)}
+  .secundario{
+    background:#fff; color:var(--azul); border:1px solid var(--azul2);
+    padding:7px 14px; border-radius:6px; font-size:13px; cursor:pointer;
+  }
+  .secundario:hover{background:var(--claro)}
+  .secundario:disabled{color:#b8c4d0; border-color:var(--borda); cursor:not-allowed}
+
+  #fixo{position:sticky; top:0; z-index:5; background:var(--claro);
+        border:1px solid #c9d9ec; border-left:5px solid var(--azul2);
+        border-radius:8px; padding:12px 14px; margin-bottom:14px}
+  #fixo .qid{font-size:11px; text-transform:uppercase; letter-spacing:.8px; color:var(--azul2); font-weight:700}
+  #fixo .nec{font-size:15px; color:#123; margin-top:3px}
+  #fixo .esc{font-size:12.5px; color:#5a6875; margin-top:6px; font-style:italic}
+  #fixo .cons{font-size:12px; color:#5a6875; margin-top:6px}
+  #fixo .cons code{background:#fff; padding:1px 6px; border-radius:4px; border:1px solid #cfd9e4}
+
+  #doc{background:#fff; border:1px solid var(--borda); border-radius:10px; padding:20px; min-height:190px}
+  #doc .tit{font-size:19px; font-weight:700; color:#12222f; margin-bottom:10px}
+  #doc .txt{font-size:15px; white-space:pre-wrap; word-break:break-word}
+  #doc .meta{margin-top:14px; padding-top:10px; border-top:1px dashed var(--borda); font-size:12.5px; color:#7a8794}
+  #doc .meta b{color:#5a6875}
+
+  #notas{display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin:16px 0 10px}
+  .nota{border:2px solid var(--borda); background:#fff; border-radius:9px; padding:13px 8px;
+        cursor:pointer; text-align:center; transition:.12s}
+  .nota:hover{border-color:var(--azul2); background:var(--claro)}
+  .nota .n{display:block; font-size:23px; font-weight:800; color:var(--azul)}
+  .nota .r{display:block; font-size:12.5px; margin-top:2px}
+  .nota .k{display:block; font-size:10.5px; color:#9aa7b4; margin-top:5px}
+  .nota.sel{border-color:var(--acento); background:#fdf3ec}
+  .nota.sel .n{color:var(--acento)}
+
+  #barra{height:7px; background:#e3e9f0; border-radius:4px; overflow:hidden; margin-bottom:6px}
+  #barra div{height:100%; background:var(--azul2); width:0; transition:width .2s}
+  #linhaProg{display:flex; align-items:center; gap:12px; font-size:12.5px; color:#7a8794; margin-bottom:12px; flex-wrap:wrap}
+  #linhaProg .sp{flex:1}
+
+  #guia{position:fixed; top:0; right:0; height:100%; width:380px; max-width:88vw; background:#fff;
+        border-left:1px solid var(--borda); box-shadow:-6px 0 22px rgba(0,0,0,.10);
+        padding:18px; overflow:auto; transform:translateX(100%); transition:.18s; z-index:20}
+  #guia.aberto{transform:none}
+  #guia pre{white-space:pre-wrap; font-size:13px; font-family:inherit; line-height:1.55}
+
+  .aviso{background:#fdf3ec; border:1px solid #f0cdb0; border-left:5px solid var(--acento);
+         border-radius:7px; padding:11px 14px; font-size:13.5px; margin:12px 0}
+  .erro{background:#fdecec; border-color:#f0b0b0; border-left-color:#c0392b}
+  .ok{background:#eef7ee; border-color:#b8ddb8; border-left-color:#2e7d32}
+  table{border-collapse:collapse; width:100%; font-size:13.5px; margin-top:8px}
+  th,td{border-bottom:1px solid var(--borda); padding:7px 9px; text-align:left}
+  th{color:var(--azul2); font-size:11.5px; text-transform:uppercase; letter-spacing:.5px}
+  .oculto{display:none}
+  kbd{background:#eef2f6; border:1px solid var(--borda); border-bottom-width:2px;
+      border-radius:4px; padding:0 5px; font-size:11px; font-family:inherit}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Julgamento de relevancia</h1>
+  <span style="font-size:12px;opacity:.75">PI III &middot; Motor de Busca &middot; Aula 05</span>
+  <span class="sp"></span>
+  <span id="quem" style="font-size:12px;opacity:.85"></span>
+  <button id="btGuia" class="oculto" title="tecla G">Guia</button>
+  <button id="btExportar" class="oculto">Exportar CSV</button>
+  <button id="btReiniciar" class="oculto">Nova sess&atilde;o</button>
+</header>
+
+<main>
+
+<section id="telaSetup">
+  <div class="cartao">
+    <h2>1. Quem est&aacute; julgando</h2>
+    <label for="juiz">Seu nome ou apelido (vai para cada linha do CSV)</label>
+    <input type="text" id="juiz" placeholder="joao" autocomplete="off">
+  </div>
+
+  <div class="cartao">
+    <h2>2. O corpus</h2>
+    <p class="dica">CSV com uma linha por documento. Precisa de uma coluna <b>id</b> e uma coluna
+      <b>texto</b>. As colunas <b>titulo</b>, <b>data</b>, <b>fonte</b> e <b>url</b> s&atilde;o opcionais e
+      aparecem na tela se existirem. Separador <code>,</code> ou <code>;</code> &mdash; detectado sozinho.</p>
+    <input type="file" id="fCorpus" accept=".csv,.txt">
+    <details style="margin-top:8px">
+      <summary class="dica" style="cursor:pointer">ou colar o conte&uacute;do</summary>
+      <textarea id="tCorpus" placeholder="id,titulo,texto"></textarea>
+    </details>
+  </div>
+
+  <div class="cartao">
+    <h2>3. As necessidades de informa&ccedil;&atilde;o</h2>
+    <p class="dica">CSV com uma linha por consulta. Colunas: <b>consulta</b> (o id, ex. q01),
+      <b>texto_consulta</b>, <b>necessidade</b> (a prosa) e <b>escopo</b> (opcional).</p>
+    <input type="file" id="fNec" accept=".csv,.txt">
+    <details style="margin-top:8px">
+      <summary class="dica" style="cursor:pointer">ou colar o conte&uacute;do</summary>
+      <textarea id="tNec" placeholder="consulta,texto_consulta,necessidade,escopo"></textarea>
+    </details>
+  </div>
+
+  <div class="cartao">
+    <h2>4. A <i>pool</i> <span style="font-weight:400;font-size:13px;color:#7a8794">(opcional)</span></h2>
+    <p class="dica">CSV com as colunas <b>consulta</b> e <b>documento</b>: quais documentos julgar em
+      cada consulta. <b>Se voc&ecirc; n&atilde;o carregar nada</b>, a ferramenta usa todos os documentos do
+      corpus para todas as consultas &mdash; s&oacute; vi&aacute;vel em corpus pequeno.</p>
+    <input type="file" id="fPool" accept=".csv,.txt">
+  </div>
+
+  <div class="cartao">
+    <h2>5. Seu guia de julgamento</h2>
+    <p class="dica">Cole aqui os seus crit&eacute;rios e casos de fronteira. Fica dispon&iacute;vel durante todo o
+      julgamento pela tecla <kbd>G</kbd>. Deixar em branco &eacute; permitido &mdash; e &eacute; m&aacute; ideia.</p>
+    <textarea id="tGuia" style="min-height:130px;font-family:inherit;font-size:13.5px"
+      placeholder="Grau 2 - responde a necessidade: ...&#10;Grau 1 - fala do assunto sem responder: ...&#10;Grau 0 - nao serve: ...&#10;&#10;Casos de fronteira:&#10;- documento correto mas superficial -> ...&#10;- documento no idioma errado -> ..."></textarea>
+    <label for="semente" style="margin-top:14px">Semente do embaralhamento</label>
+    <input type="number" id="semente" value="42">
+    <p class="dica">A ordem &eacute; embaralhada para evitar vi&eacute;s de posi&ccedil;&atilde;o. A semente torna a ordem
+      reproduz&iacute;vel &mdash; anote-a no relat&oacute;rio.</p>
+  </div>
+
+  <div id="erroSetup"></div>
+  <button id="btComecar" class="primario">Come&ccedil;ar a julgar</button>
+  <div id="retomar" class="oculto" style="margin-top:16px"></div>
+</section>
+
+<section id="telaJulgar" class="oculto">
+  <div id="fixo">
+    <div class="qid" id="fxQid"></div>
+    <div class="nec" id="fxNec"></div>
+    <div class="esc" id="fxEsc"></div>
+    <div class="cons" id="fxCons"></div>
+  </div>
+
+  <div id="barra"><div></div></div>
+  <div id="linhaProg">
+    <span id="progTexto"></span>
+    <span class="sp"></span>
+    <span id="avisoPasse" style="color:var(--acento);font-weight:600"></span>
+  </div>
+
+  <div id="doc"></div>
+
+  <div id="notas">
+    <div class="nota" data-g="0"><span class="n">0</span><span class="r">n&atilde;o serve</span><span class="k">tecla 0</span></div>
+    <div class="nota" data-g="1"><span class="n">1</span><span class="r">fala do assunto</span><span class="k">tecla 1</span></div>
+    <div class="nota" data-g="2"><span class="n">2</span><span class="r">responde</span><span class="k">tecla 2</span></div>
+  </div>
+
+  <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+    <button id="btVoltar" class="secundario">&larr; Voltar e corrigir</button>
+    <button id="btPular" class="secundario">Pular (P)</button>
+    <span style="flex:1"></span>
+    <span class="dica">teclas: <kbd>0</kbd> <kbd>1</kbd> <kbd>2</kbd> julgar &middot; <kbd>&larr;</kbd> voltar &middot; <kbd>P</kbd> pular &middot; <kbd>G</kbd> guia</span>
+  </div>
+</section>
+
+<section id="telaFim" class="oculto">
+  <div class="cartao">
+    <h2>Passada conclu&iacute;da</h2>
+    <div id="resumoFim"></div>
+    <div style="margin-top:16px;display:flex;gap:10px;flex-wrap:wrap">
+      <button id="btExportar2" class="primario">Exportar CSV</button>
+      <button id="btRever" class="secundario">Revisar os julgamentos</button>
+      <button id="btSegunda" class="secundario">Iniciar segunda passada</button>
+    </div>
+  </div>
+  <div class="cartao">
+    <h2>Segunda passada &mdash; e o kappa consigo mesmo</h2>
+    <p style="font-size:14px">A segunda passada sorteia <b>20%</b> dos itens j&aacute; julgados e os
+    reapresenta <b>sem mostrar a nota anterior</b>. Comparando as duas passadas voc&ecirc; calcula o
+    kappa de Cohen e descobre se o seu guia &eacute; claro o bastante para produzir julgamentos est&aacute;veis.</p>
+    <div class="aviso"><b>Espere pelo menos um dia</b> antes de rodar a segunda passada. Sem esse
+    intervalo voc&ecirc; lembra das notas, e o kappa sai alto por mem&oacute;ria &mdash; n&atilde;o por crit&eacute;rio.</div>
+    <p style="font-size:14px">As linhas da segunda passada saem no CSV com o seu nome sufixado
+    (<code>joao_p2</code>), e o script <code>kappa.R</code> da aula compara as duas.</p>
+  </div>
+</section>
+
+</main>
+
+<div id="guia">
+  <h2>Guia de julgamento</h2>
+  <pre id="guiaTexto"></pre>
+  <button class="secundario" id="btFecharGuia" style="margin-top:14px">Fechar (G)</button>
+</div>
+
+<script>
+"use strict";
+var CHAVE = "pi3_julgar_v2";
+function $(s){ return document.querySelector(s); }
+
+/* ============ CSV ============ */
+function sniff(txt){
+  var linha = txt.split(/\r?\n/)[0] || "";
+  var v = 0, pv = 0, tb = 0, aspas = false;
+  for(var i = 0; i < linha.length; i++){
+    var ch = linha[i];
+    if(ch === '"') aspas = !aspas;
+    else if(!aspas){ if(ch === ",") v++; else if(ch === ";") pv++; else if(ch === "\t") tb++; }
+  }
+  if(tb > v && tb > pv) return "\t";
+  return pv > v ? ";" : ",";
+}
+
+function parseCSV(txt){
+  txt = txt.replace(/^﻿/, "");          // BOM que o Excel deixa no inicio
+  txt = txt.replace(/^﻿/, "");     // (a linha acima pode estar inerte)
+  txt = txt.replace(new RegExp("^\\uFEFF"), "");   // BOM, escrito por codigo
+  var d = sniff(txt);
+  var linhas = [], linha = [], campo = "", i = 0, aspas = false;
+  while(i < txt.length){
+    var c = txt[i];
+    if(aspas){
+      if(c === '"'){
+        if(txt[i+1] === '"'){ campo += '"'; i += 2; continue; }
+        aspas = false; i++; continue;
+      }
+      campo += c; i++; continue;              // quebra de linha DENTRO de aspas e' preservada
+    }
+    if(c === '"'){ aspas = true; i++; continue; }
+    if(c === d){ linha.push(campo); campo = ""; i++; continue; }
+    if(c === "\r"){ i++; continue; }
+    if(c === "\n"){ linha.push(campo); linhas.push(linha); linha = []; campo = ""; i++; continue; }
+    campo += c; i++;
+  }
+  if(campo !== "" || linha.length){ linha.push(campo); linhas.push(linha); }
+  return linhas.filter(function(r){ return !(r.length === 1 && r[0].trim() === ""); });
+}
+
+function paraObjetos(txt){
+  var linhas = parseCSV(txt);
+  if(linhas.length < 2) throw new Error("o arquivo tem menos de 2 linhas (cabecalho + dados).");
+  var cab = linhas[0].map(function(h){ return h.trim().toLowerCase().replace(/^﻿/, ""); });
+  return linhas.slice(1).map(function(r){
+    var o = {};
+    cab.forEach(function(h, i){ o[h] = (r[i] !== undefined ? r[i].trim() : ""); });
+    return o;
+  });
+}
+
+function primeiro(obj, nomes){
+  for(var i = 0; i < nomes.length; i++) if(obj[nomes[i]]) return obj[nomes[i]];
+  return "";
+}
+
+function csvEscapa(v){
+  v = String(v === undefined || v === null ? "" : v);
+  return /[",;\n]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v;
+}
+
+/* ============ aleatorio com semente ============ */
+function mulberry32(a){
+  return function(){
+    a |= 0; a = a + 0x6D2B79F5 | 0;
+    var t = Math.imul(a ^ a >>> 15, 1 | a);
+    t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+    return ((t ^ t >>> 14) >>> 0) / 4294967296;
+  };
+}
+function embaralhar(arr, semente){
+  var r = mulberry32(semente), a = arr.slice();
+  for(var i = a.length - 1; i > 0; i--){
+    var j = Math.floor(r() * (i + 1));
+    var tmp = a[i]; a[i] = a[j]; a[j] = tmp;
+  }
+  return a;
+}
+
+/* ============ estado ============ */
+var E = null;
+
+// Separador de chave: caractere de controle, impossivel em um id real.
+// NAO usar espaco -- id de documento pode conter espaco, e a exportacao quebraria.
+var SEP = "";
+SEP = String.fromCharCode(1);   // definido por codigo: nao depende de caractere literal no arquivo
+function chaveItem(it){ return it.consulta + SEP + it.documento; }
+
+// Se o corpus for grande, o localStorage pode estourar a cota (~5 MB).
+// Nesse caso salvamos uma versao "leve", sem o corpus: os julgamentos nao se perdem,
+// mas para retomar sera preciso recarregar os arquivos.
+var avisouCota = false;
+function salvar(){
+  try{
+    localStorage.setItem(CHAVE, JSON.stringify(E));
+  }catch(e){
+    try{
+      var leve = {};
+      for(var k in E) if(k !== "corpus" && k !== "necs") leve[k] = E[k];
+      leve.leve = true;
+      localStorage.setItem(CHAVE, JSON.stringify(leve));
+    }catch(e2){
+      if(!avisouCota){
+        avisouCota = true;
+        alert("O navegador nao conseguiu salvar a sessao (corpus grande demais para o armazenamento local).\n\n" +
+              "Os julgamentos continuam nesta aba, mas serao perdidos se voce fecha-la.\n" +
+              "Exporte o CSV com frequencia.");
+      }
+    }
+  }
+}
+function carregar(){
+  try{ return JSON.parse(localStorage.getItem(CHAVE) || "null"); }catch(e){ return null; }
+}
+
+/* ============ leitura de arquivo ============ */
+function lerArquivo(input, textarea){
+  return new Promise(function(res){
+    var f = input.files && input.files[0];
+    if(!f){ res(textarea ? textarea.value.trim() : ""); return; }
+    var fr = new FileReader();
+    fr.onload = function(){ res(String(fr.result)); };
+    fr.onerror = function(){ res(""); };
+    fr.readAsText(f, "UTF-8");
+  });
+}
+function aviso(el, msg, tipo){
+  el.innerHTML = '<div class="aviso ' + (tipo || "") + '">' + msg + "</div>";
+}
+function escapar(s){
+  return String(s).replace(/[&<>"]/g, function(c){
+    return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];
+  });
+}
+
+/* ============ ler corpus e necessidades ============ */
+function lerCorpus(txt){
+  var corpus = {}, n = 0;
+  paraObjetos(txt).forEach(function(l){
+    var id = primeiro(l, ["id","doc","documento","citekey","docid"]);
+    if(!id) return;
+    corpus[id] = l; n++;
+  });
+  if(!n) throw new Error("nenhum documento com coluna <b>id</b> foi encontrado no corpus.");
+  return corpus;
+}
+function lerNecs(txt){
+  var necs = {}, n = 0;
+  paraObjetos(txt).forEach(function(l){
+    var q = primeiro(l, ["consulta","query","qid","id"]);
+    if(!q) return;
+    necs[q] = {
+      consulta: q,
+      texto: primeiro(l, ["texto_consulta","consulta_texto","query_text","termos","busca"]),
+      necessidade: primeiro(l, ["necessidade","need","descricao","topico"]),
+      escopo: primeiro(l, ["escopo","scope","nota","observacao"])
+    };
+    n++;
+  });
+  if(!n) throw new Error("nenhuma consulta encontrada. A coluna <b>consulta</b> existe?");
+  return necs;
+}
+
+/* ============ montar sessao ============ */
+$("#btComecar").addEventListener("click", function(){
+  var err = $("#erroSetup");
+  err.innerHTML = "";
+  var juiz = $("#juiz").value.trim();
+
+  Promise.resolve().then(function(){
+    if(!juiz) throw new Error("preencha o seu nome no passo 1.");
+    if(/[,;"]/.test(juiz)) throw new Error("o nome nao pode ter virgula, ponto-e-virgula ou aspas.");
+    return Promise.all([
+      lerArquivo($("#fCorpus"), $("#tCorpus")),
+      lerArquivo($("#fNec"), $("#tNec")),
+      lerArquivo($("#fPool"), null)
+    ]);
+  }).then(function(txts){
+    var txtCorpus = txts[0], txtNec = txts[1], txtPool = txts[2];
+    if(!txtCorpus) throw new Error("carregue ou cole o corpus no passo 2.");
+    if(!txtNec)    throw new Error("carregue ou cole as necessidades no passo 3.");
+
+    var corpus = lerCorpus(txtCorpus);
+    var necs   = lerNecs(txtNec);
+    var listaQ = Object.keys(necs);
+    var listaD = Object.keys(corpus);
+
+    var itens = [], semPool = false, ignoradas = 0;
+    if(txtPool){
+      paraObjetos(txtPool).forEach(function(l){
+        var q = primeiro(l, ["consulta","query","qid"]);
+        var d = primeiro(l, ["documento","doc","id","docid"]);
+        if(q && d && necs[q] && corpus[d]) itens.push({consulta:q, documento:d});
+        else ignoradas++;
+      });
+      if(!itens.length) throw new Error(
+        "a pool foi lida mas nenhuma linha casou com o corpus e as consultas. Confira os ids.");
+    }else{
+      semPool = true;
+      listaQ.forEach(function(q){
+        listaD.forEach(function(d){ itens.push({consulta:q, documento:d}); });
+      });
+      if(itens.length > 400){
+        var ok = confirm("Sem pool, voce vai julgar " + itens.length + " itens (" +
+          listaQ.length + " consultas x " + listaD.length + " documentos).\n\n" +
+          "A 20 segundos cada, isso da cerca de " + Math.round(itens.length * 20 / 3600) +
+          " horas. O recomendado e montar uma pool.\n\nComecar mesmo assim?");
+        if(!ok) return;
+      }
+    }
+
+    var semente = parseInt($("#semente").value, 10) || 42;
+    E = {
+      versao: 2, juiz: juiz, semente: semente, corpus: corpus, necs: necs,
+      itens: embaralhar(itens, semente), idx: 0, passe: 1,
+      notas: {}, notas2: {}, itens2: [],
+      guia: $("#tGuia").value,
+      inicio: new Date().toISOString(),
+      semPool: semPool
+    };
+    salvar();
+    if(ignoradas > 0) console.warn(ignoradas + " linha(s) da pool ignoradas (id inexistente).");
+    irParaJulgar();
+  }).catch(function(e){
+    aviso(err, "<b>Nao deu para comecar:</b> " + e.message, "erro");
+  });
+});
+
+/* ============ navegacao de telas ============ */
+function mostrar(tela){
+  ["#telaSetup","#telaJulgar","#telaFim"].forEach(function(s){ $(s).classList.add("oculto"); });
+  $(tela).classList.remove("oculto");
+  var emSessao = tela !== "#telaSetup";
+  ["#btGuia","#btExportar","#btReiniciar"].forEach(function(b){
+    $(b).classList.toggle("oculto", !emSessao);
+  });
+  $("#quem").textContent = (emSessao && E) ? (E.juiz + (E.passe === 2 ? " - 2a passada" : "")) : "";
+}
+function irParaJulgar(){ mostrar("#telaJulgar"); desenhar(); }
+
+function listaCorrente(){ return E.passe === 1 ? E.itens : E.itens2; }
+function notasCorrentes(){ return E.passe === 1 ? E.notas : E.notas2; }
+
+/* ============ desenhar ============ */
+var tInicioItem = Date.now();
+
+function desenhar(){
+  var lista = listaCorrente();
+  if(E.idx >= lista.length){ irParaFim(); return; }
+
+  var it = lista[E.idx];
+  var n  = E.necs[it.consulta];
+  var d  = E.corpus[it.documento];
+
+  if(!n || !d){                      // pool aponta para algo que nao existe: pula
+    console.warn("item sem correspondencia no corpus/necessidades, pulando:", it);
+    E.idx++;
+    desenhar();
+    return;
+  }
+
+  $("#fxQid").textContent = it.consulta;
+  $("#fxNec").textContent = n.necessidade || "(necessidade nao informada)";
+  $("#fxEsc").textContent = n.escopo ? "Escopo: " + n.escopo : "";
+  $("#fxCons").innerHTML  = n.texto ? "consulta digitada: <code>" + escapar(n.texto) + "</code>" : "";
+
+  var titulo = primeiro(d, ["titulo","title","nome"]);
+  var texto  = primeiro(d, ["texto","text","conteudo","abstract","resumo","corpo"]);
+  var extras = "";
+  ["data","fonte","autor","url","link","secao"].forEach(function(k){
+    if(d[k]) extras += "<b>" + k + ":</b> " + escapar(d[k]) + "&nbsp;&nbsp; ";
+  });
+  $("#doc").innerHTML =
+    (titulo ? '<div class="tit">' + escapar(titulo) + "</div>" : "") +
+    '<div class="txt">' + escapar(texto || "(documento sem texto)") + "</div>" +
+    (extras ? '<div class="meta">' + extras + "</div>" : "");
+
+  var nt = notasCorrentes()[chaveItem(it)];
+  Array.prototype.forEach.call(document.querySelectorAll(".nota"), function(b){
+    b.classList.toggle("sel", !!nt && String(nt.grau) === b.dataset.g);
+  });
+
+  var total = lista.length;
+  var feitos = Object.keys(notasCorrentes()).length;
+  $("#barra div").style.width = (100 * feitos / total) + "%";
+  $("#progTexto").textContent =
+    "item " + (E.idx + 1) + " de " + total + "  -  julgados: " + feitos +
+    "  -  documento " + it.documento;
+  $("#avisoPasse").textContent = E.passe === 2 ? "2a passada - a nota anterior esta oculta" : "";
+  $("#btVoltar").disabled = E.idx === 0;
+
+  tInicioItem = Date.now();
+}
+
+/* ============ julgar ============ */
+function julgar(g){
+  var lista = listaCorrente();
+  if(E.idx >= lista.length) return;
+  var it = lista[E.idx];
+  notasCorrentes()[chaveItem(it)] = {
+    grau: g,
+    ts: new Date().toISOString(),
+    seg: Math.max(1, Math.round((Date.now() - tInicioItem) / 1000))
+  };
+  E.idx++;
+  salvar();
+  desenhar();
+}
+Array.prototype.forEach.call(document.querySelectorAll(".nota"), function(b){
+  b.addEventListener("click", function(){ julgar(parseInt(b.dataset.g, 10)); });
+});
+$("#btVoltar").addEventListener("click", function(){ if(E.idx > 0){ E.idx--; salvar(); desenhar(); } });
+$("#btPular").addEventListener("click", function(){ E.idx++; salvar(); desenhar(); });
+
+document.addEventListener("keydown", function(ev){
+  if(/^(INPUT|TEXTAREA)$/.test(document.activeElement.tagName)) return;
+  if(ev.key === "g" || ev.key === "G"){ alternarGuia(); return; }
+  if($("#telaJulgar").classList.contains("oculto")) return;
+  if(ev.key === "0" || ev.key === "1" || ev.key === "2"){ julgar(parseInt(ev.key, 10)); ev.preventDefault(); }
+  else if(ev.key === "ArrowLeft"){ if(E.idx > 0){ E.idx--; salvar(); desenhar(); } ev.preventDefault(); }
+  else if(ev.key === "p" || ev.key === "P"){ E.idx++; salvar(); desenhar(); ev.preventDefault(); }
+});
+
+/* ============ guia ============ */
+function alternarGuia(){
+  $("#guiaTexto").textContent = (E && E.guia) ? E.guia : "(nenhum guia foi informado nesta sessao)";
+  $("#guia").classList.toggle("aberto");
+}
+$("#btGuia").addEventListener("click", alternarGuia);
+$("#btFecharGuia").addEventListener("click", function(){ $("#guia").classList.remove("aberto"); });
+
+/* ============ fim da passada ============ */
+function irParaFim(){
+  mostrar("#telaFim");
+  var lista = listaCorrente(), notas = notasCorrentes();
+  var total = lista.length, feitos = Object.keys(notas).length;
+  var cont = {0:0, 1:0, 2:0}, tempos = [];
+  for(var k in notas){ cont[notas[k].grau]++; tempos.push(notas[k].seg); }
+  tempos.sort(function(a,b){ return a - b; });
+  var mediana = tempos.length ? tempos[Math.floor(tempos.length / 2)] : 0;
+  var rapidos = tempos.filter(function(t){ return t < 5; }).length;
+
+  var h = "<table><tr><th>o que</th><th>valor</th></tr>" +
+    linha("itens da passada", total) +
+    linha("julgados", feitos + (feitos < total ? " (pulados: " + (total - feitos) + ")" : "")) +
+    linha("grau 2 - responde", cont[2]) +
+    linha("grau 1 - fala do assunto", cont[1]) +
+    linha("grau 0 - nao serve", cont[0]) +
+    linha("tempo mediano por item", mediana + " s") +
+    "</table>";
+  if(rapidos > 0){
+    h += '<div class="aviso"><b>' + rapidos + " item(ns) julgado(s) em menos de 5 segundos.</b> " +
+         "Vale revisar: julgamento apressado e a principal fonte de ruido no gabarito.</div>";
+  }
+  if(feitos === total && E.passe === 1){
+    h += '<div class="aviso ok">Primeira passada completa. Exporte o CSV agora &mdash; ' +
+         "o <code>localStorage</code> nao e backup.</div>";
+  }
+  $("#resumoFim").innerHTML = h;
+  $("#btSegunda").classList.toggle("oculto", E.passe === 2 || feitos < 5);
+}
+function linha(a, b){ return "<tr><td>" + a + "</td><td><b>" + b + "</b></td></tr>"; }
+
+$("#btRever").addEventListener("click", function(){ E.idx = 0; salvar(); irParaJulgar(); });
+
+$("#btSegunda").addEventListener("click", function(){
+  var julgados = E.itens.filter(function(it){ return E.notas[chaveItem(it)]; });
+  var n = Math.max(1, Math.round(0.2 * julgados.length));
+  E.itens2 = embaralhar(julgados, E.semente + 1).slice(0, n);
+  E.notas2 = {};
+  E.passe = 2;
+  E.idx = 0;
+  salvar();
+  irParaJulgar();
+});
+
+/* ============ exportar ============ */
+function exportar(){
+  var linhas = ["consulta,documento,grau,juiz,timestamp,segundos"];
+  function escreve(notas, sufixo){
+    for(var k in notas){
+      var partes = k.split(SEP), v = notas[k];
+      linhas.push([partes[0], partes[1], v.grau, E.juiz + sufixo, v.ts, v.seg]
+                  .map(csvEscapa).join(","));
+    }
+  }
+  escreve(E.notas, "");
+  escreve(E.notas2, "_p2");
+  // BOM no inicio para o Excel abrir em UTF-8
+  var blob = new Blob(["﻿" + linhas.join("\n") + "\n"], {type:"text/csv;charset=utf-8"});
+  // refaz o blob com o BOM garantido por codigo (Excel abre em UTF-8)
+  blob = new Blob([String.fromCharCode(0xFEFF) + linhas.join("\n") + "\n"],
+                  {type:"text/csv;charset=utf-8"});
+  var a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "qrels_" + E.juiz.replace(/[^\w.-]/g, "_") + "_" +
+               new Date().toISOString().slice(0, 10) + ".csv";
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(function(){ URL.revokeObjectURL(a.href); }, 2000);
+}
+$("#btExportar").addEventListener("click", exportar);
+$("#btExportar2").addEventListener("click", exportar);
+
+$("#btReiniciar").addEventListener("click", function(){
+  if(!confirm("Isto apaga a sessao salva no navegador. Voce exportou o CSV?")) return;
+  localStorage.removeItem(CHAVE);
+  location.reload();
+});
+
+/* ============ retomar ============ */
+(function inicio(){
+  mostrar("#telaSetup");
+  var s = carregar();
+  if(!s || !s.itens || !s.itens.length) return;
+
+  var feitos = Object.keys(s.notas || {}).length + Object.keys(s.notas2 || {}).length;
+  var totalP = s.passe === 1 ? s.itens.length : (s.itens2 || []).length;
+
+  $("#retomar").classList.remove("oculto");
+  $("#retomar").innerHTML =
+    '<div class="aviso ok"><b>Ha uma sessao em andamento</b> de <b>' + escapar(s.juiz) + "</b>" +
+    (s.passe === 2 ? " (2a passada)" : "") + " &mdash; " + feitos + " julgamento(s) salvos, item " +
+    (s.idx + 1) + " de " + totalP + "." +
+    (s.leve ? "<br><b>Recarregue o corpus e as necessidades acima</b> antes de retomar: " +
+              "o corpus era grande demais para ficar salvo no navegador." : "") +
+    '<br><button class="primario" id="btRetomar" style="margin-top:10px">Retomar de onde parei</button></div>';
+
+  $("#btRetomar").addEventListener("click", function(){
+    if(!s.leve){ E = s; irParaJulgar(); return; }
+    Promise.all([
+      lerArquivo($("#fCorpus"), $("#tCorpus")),
+      lerArquivo($("#fNec"), $("#tNec"))
+    ]).then(function(t){
+      if(!t[0] || !t[1]) throw new Error("carregue o corpus (passo 2) e as necessidades (passo 3) para retomar.");
+      s.corpus = lerCorpus(t[0]);
+      s.necs   = lerNecs(t[1]);
+      E = s;
+      irParaJulgar();
+    }).catch(function(e){
+      aviso($("#erroSetup"), "<b>Nao deu para retomar:</b> " + e.message, "erro");
+    });
+  });
+})();
+</script>
+</body>
+</html>

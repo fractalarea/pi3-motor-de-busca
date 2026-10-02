@@ -1,0 +1,4 @@
+consulta,texto_consulta,necessidade,escopo
+q01,modelo de recuperacao,"Quais sao os modelos formais que um motor de busca usa para ordenar documentos?","Textos que apenas mencionam recuperacao de informacao sem apresentar um modelo nao contam como resposta."
+q02,como acelerar a busca,"Que estruturas de dados tornam a busca rapida em colecoes grandes?","Melhoria de hardware nao conta; queremos estrutura de dados ou algoritmo."
+q03,como saber se a busca esta boa,"Como medir se um sistema de busca esta devolvendo bons resultados?","Opiniao de usuario sem metrica nao conta como resposta."

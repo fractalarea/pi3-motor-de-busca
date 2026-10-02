@@ -1,0 +1,9 @@
+id,titulo,texto
+d1,Recuperacao de informacao,recuperacao de informacao ordena documentos por relevancia
+d2,Modelo de espaco vetorial,o modelo de espaco vetorial representa documentos como vetores
+d3,BM25,bm25 e um modelo probabilistico de ranqueamento de texto
+d4,Aprendizado estatistico,aprendizado estatistico fundamenta a recuperacao moderna
+d5,Indice invertido,o indice invertido acelera a busca em muitos documentos
+d6,Embeddings,embeddings capturam a semantica de palavras e documentos
+d7,Avaliacao,a avaliacao mede a relevancia dos resultados da busca
+d8,Ciencia de dados,ciencia de dados combina estatistica e programacao
