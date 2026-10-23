@@ -1,7 +1,7 @@
 # ==========================================================================
 #  motor06.R  --  Projeto Integrador III -- Motor de Busca
 #  Para a Aula 06: as funcoes das aulas ANTERIORES (00, 01, 02, 03, 04, 05, 5,5).
-#  Gerado de motor_mestre.R em 2026-10-01. NAO EDITE ESTE ARQUIVO: edite o mestre.
+#  Gerado de motor_mestre.R em 2026-10-08. NAO EDITE ESTE ARQUIVO: edite o mestre.
 # ==========================================================================
 #
 #  COMO CARREGAR
@@ -22,7 +22,7 @@
 #  O que cada uma recebe e devolve: motor/CONTRATO.md
 # ==========================================================================
 
-MOTOR_VERSAO <- "motor06 v1 2026-10-01"   # aparece no estado()
+MOTOR_VERSAO <- "motor06 v2 2026-10-08"   # aparece no estado()
 .MOTOR_AULA  <- 6                           # o motor nao adianta aulas >= esta
 
 # --------------------------------------------------------------------------
@@ -319,10 +319,11 @@ ndcg <- function(g, ideal = sort(g, decreasing = TRUE)) {
 }
 
 # As cinco metricas de um ranking contra os graus.
-metricas <- function(ranking, grau, limiar = 2, k = 3) {
+# Mesmo nome, argumentos e saida da funcao escrita na Parte D da Aula 5,5.
+metricas <- function(ranking, grau, limiar, k = 3) {
   r <- relevancia(ranking, grau, limiar)
-  setNames(c(precisao_k(r$rel, k), ap(r$rel, r$R), rr(r$rel), ndcg(r$rel), ndcg(r$g)),
-           c(paste0("P@", k), "AP", "RR", "nDCG_bin", "nDCG_grad"))
+  c(P_at_k = precisao_k(r$rel, k), AP = ap(r$rel, r$R), RR = rr(r$rel),
+    nDCG_bin = ndcg(r$rel), nDCG_grad = ndcg(r$g))
 }
 
 # ==========================================================================

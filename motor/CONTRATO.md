@@ -14,6 +14,8 @@
 | `motor05.R` | 05 | 00–04 |
 | `motor05b.R` | 5,5 | 00–05 |
 | `motor06.R` | 06 | 00–5,5 |
+| `motor07.R` | 07 | 00–06 |
+| `motor08.R` | 08 | 00–07 |
 
 Todos trazem também `estado()` e `anexar_estado()`.
 
@@ -81,7 +83,14 @@ Quem tem o repositório clonado (RStudio) pode trocar o endereço pelo caminho l
 | `precisao_k(rel, k)` · `recall_k(rel, k, R)` | motor06 | | P@k, R@k | 5,5 |
 | `ap(rel, R)` · `rr(rel)` | motor06 | | AP; 1 / posição do primeiro relevante | 5,5 |
 | `dcg(g)` · `ndcg(g, ideal)` | motor06 | | DCG; nDCG | 5,5 |
-| `metricas(ranking, grau, limiar, k)` | motor06 | | as cinco: P@k, AP, RR, nDCG binário, nDCG graduado | 5,5 |
+| `metricas(ranking, grau, limiar, k = 3)` | motor06 | ranking, graus e o limiar (obrigatório) | vetor nomeado `P_at_k`, `AP`, `RR`, `nDCG_bin`, `nDCG_grad` — igual à função da Parte D da Aula 5,5 | 5,5 |
+| `rocchio(q, Dr, Dnr, ix, a, b, g)` | motor07 | vetor da consulta e nomes dos marcados | a consulta modificada $\alpha q + \beta \bar d_r - \gamma \bar d_{nr}$ | 06 |
+| `ranking_vetor(q, ix)` | motor07 | um **vetor** de consulta | todos os documentos, do maior cosseno (com `ix$w`) ao menor | 06 |
+| `prf(q0, k, ix, p)` | motor07 | vetor, $k$, pesos `c(a, b, g)` | o ranking depois da pseudo-realimentação com os top-$k$ | 06 |
+| `residual(rk, g, fora, limiar)` | motor07 | ranking, graus, documentos marcados | as métricas sem os marcados (coleção residual) | 06 |
+| `lsa(ix, k)` | motor08 | índice e número de dimensões | lista `U` (termos × k), `S`, `D` (documentos × k) | 07 |
+| `ranking_lsa(consulta, ix, cfg, modelo)` | motor08 | consulta (texto) e o que `lsa` devolve | documentos do maior cosseno ao menor, no espaço LSA | 07 |
+| `rrf(..., c = 60)` | motor08 | dois ou mais rankings | a fusão RRF, do maior escore ao menor | 07 |
 | `estado()` | todos | — | a fotografia da sessão, em Markdown, na tela | — |
 | `anexar_estado(arquivo)` | todos | caminho do `.md` | anexa (ou substitui) a seção "Estado do R" no fim do arquivo | — |
 
@@ -113,6 +122,10 @@ Quem tem o repositório clonado (RStudio) pode trocar o endereço pelo caminho l
 | `k1`, `b` | motor05 | 1,2 e 0,75 | decididos na Aula 04 |
 | `limiar` | motor06 | 2 | decidido na Aula 5,5 |
 | `juizes` | — (só do grupo) | — | decidido na Aula 5,5: quem vale no gabarito, em ordem de prioridade; usado em `ler_qrels(arquivos, juiz = cfg$juizes)` |
+| `prf_k`, `rocchio` | motor07 | `0` e `c(a = 1, b = 0.75, g = 0.15)` | decididos na Aula 06: pseudo-realimentação (0 = não usar) e pesos $\alpha, \beta, \gamma$ |
+| `modelo`, `lsa_k`, `rrf_c` | motor08 | `"bm25"`, `2` e `60` | decididos na Aula 07: `"bm25"`, `"lsa"` ou `"hibrido"` (RRF de BM25 e LSA); dimensões do LSA; constante da RRF |
+| `rerank_k` | — (só do grupo, até haver motor09) | — | decidido na Aula 08: quantos do topo o reordenador de proximidade reordena (0 = não reordenar) |
+| `janela` | — (só do grupo, até haver motor09) | — | decidida na Aula 08: distância máxima da proximidade ordenada |
 | `minimo`, `grupo` | — (só do grupo) | — | Aula 01: critério de documento (caracteres) e nome do grupo; o `montar` os ignora |
 
 Os números canônicos do índice invertido (37 termos) usam `stopwords_aula()`: `montar(docs_aula(), modifyList(cfg_aula(), list(stopwords = stopwords_aula())))`. Os do cosseno e do BM25 usam `cfg_aula()` como está.

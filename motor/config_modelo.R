@@ -29,6 +29,19 @@ cfg <- list(
   # limiar = 2,                 # grau minimo para contar como relevante
   # juizes = c("ana", "bruno"), # quem vale no gabarito, em ordem de prioridade (ler_qrels)
 
+  # --- Aula 06: realimentacao -------------------------------------------
+  # prf_k   = 0,                            # 0 = sem pseudo-realimentacao; k = usa os top-k
+  # rocchio = c(a = 1, b = 0.75, g = 0.15), # pesos do Rocchio
+
+  # --- Aula 07: LSA e busca hibrida --------------------------------------
+  # modelo = "bm25",                        # "bm25", "lsa" ou "hibrido" (RRF de bm25 e lsa)
+  # lsa_k  = 20,                            # dimensoes do LSA
+  # rrf_c  = 60,                            # constante da fusao RRF
+
+  # --- Aula 08: reordenacao (rerank) ------------------------------------
+  # rerank_k = 0,                           # quantos do topo o reordenador reordena (0 = nao)
+  # janela   = 3,                           # distancia maxima da proximidade ordenada
+
   # --- fim ----------------------------------------------------------------
   grupo = "<nome do grupo>"     # ultimo campo, sem virgula depois
 )
